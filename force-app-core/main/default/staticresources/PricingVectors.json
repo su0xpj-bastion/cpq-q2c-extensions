@@ -1,0 +1,46 @@
+{
+  "_comment": "Shared test vectors. The JavaScript QCP tests (node) and the Apex core tests (static resource PricingVectors) both run every case, so the two implementations cannot drift apart.",
+  "proration": [
+    {"name": "monthly+daily: 2 months + 16/30 of June", "method": "monthly_daily", "start": "2027-04-15", "end": "2027-07-01", "monthly_price": 30, "quantity": 10, "expected": "760.00"},
+    {"name": "monthly+daily: full year", "method": "monthly_daily", "start": "2027-03-01", "end": "2028-03-01", "monthly_price": 30, "quantity": 10, "expected": "3600.00"},
+    {"name": "monthly+daily: Jan 31 to Mar 1 (month-end clipping)", "method": "monthly_daily", "start": "2027-01-31", "end": "2027-03-01", "monthly_price": 30, "quantity": 10, "expected": "310.71"},
+    {"name": "daily: 77 days at 12/365", "method": "daily", "start": "2027-04-15", "end": "2027-07-01", "monthly_price": 30, "quantity": 10, "expected": "759.45"},
+    {"name": "monthly: partial month rounds up", "method": "monthly", "start": "2027-04-15", "end": "2027-07-01", "monthly_price": 30, "quantity": 10, "expected": "900.00"},
+    {"name": "same day is zero", "method": "monthly_daily", "start": "2027-04-15", "end": "2027-04-15", "monthly_price": 30, "quantity": 10, "expected": "0.00"}
+  ],
+  "renewal": [
+    {"name": "uplift capped at 7%", "list": 30, "prior": 25, "cap_pct": 7, "grandfathered": false, "expected": "26.75"},
+    {"name": "uplift cannot exceed list", "list": 30, "prior": 29, "cap_pct": 7, "grandfathered": false, "expected": "30.00"},
+    {"name": "no prior price renews at list", "list": 30, "prior": null, "cap_pct": 7, "grandfathered": false, "expected": "30.00"},
+    {"name": "grandfathered keeps prior price", "list": 30, "prior": 20, "cap_pct": 7, "grandfathered": true, "expected": "20.00"},
+    {"name": "list dropped below prior: renew at list", "list": 30, "prior": 32, "cap_pct": 7, "grandfathered": false, "expected": "30.00"},
+    {"name": "zero cap holds price flat", "list": 30, "prior": 25, "cap_pct": 0, "grandfathered": false, "expected": "25.00"}
+  ],
+  "approval": [
+    {"name": "within rep authority", "max_discount_pct": 5, "floor_breach": false, "payment_terms": "Net 30", "term_months": 12, "expected_level": 0},
+    {"name": "discount to Deal Desk", "max_discount_pct": 15, "floor_breach": false, "payment_terms": "Net 30", "term_months": 12, "expected_level": 1},
+    {"name": "non-standard payment terms", "max_discount_pct": 10, "floor_breach": false, "payment_terms": "Net 60", "term_months": 12, "expected_level": 1},
+    {"name": "discount to Finance", "max_discount_pct": 25, "floor_breach": false, "payment_terms": "Net 30", "term_months": 12, "expected_level": 2},
+    {"name": "floor breach at small discount", "max_discount_pct": 5, "floor_breach": true, "payment_terms": "Net 30", "term_months": 12, "expected_level": 2},
+    {"name": "term over 36 months", "max_discount_pct": 10, "floor_breach": false, "payment_terms": "Net 30", "term_months": 48, "expected_level": 2},
+    {"name": "beyond Finance: CFO", "max_discount_pct": 40, "floor_breach": false, "payment_terms": "Net 30", "term_months": 12, "expected_level": 3},
+    {"name": "band edge 10.00 stays with rep", "max_discount_pct": 10, "floor_breach": false, "payment_terms": "Net 30", "term_months": 36, "expected_level": 0},
+    {"name": "missing payment terms treated as standard", "max_discount_pct": 0, "floor_breach": false, "payment_terms": null, "term_months": 12, "expected_level": 0}
+  ],
+  "status": [
+    {"from": "Draft", "to": "In Review", "allowed": true},
+    {"from": "In Review", "to": "Approved", "allowed": true},
+    {"from": "In Review", "to": "Denied", "allowed": true},
+    {"from": "In Review", "to": "Draft", "allowed": true},
+    {"from": "Approved", "to": "Presented", "allowed": true},
+    {"from": "Approved", "to": "Draft", "allowed": true},
+    {"from": "Presented", "to": "Accepted", "allowed": true},
+    {"from": "Presented", "to": "Rejected", "allowed": true},
+    {"from": "Denied", "to": "Draft", "allowed": true},
+    {"from": "Draft", "to": "Approved", "allowed": false},
+    {"from": "Draft", "to": "Accepted", "allowed": false},
+    {"from": "In Review", "to": "Presented", "allowed": false},
+    {"from": "Accepted", "to": "Draft", "allowed": false},
+    {"from": "Rejected", "to": "Accepted", "allowed": false}
+  ]
+}
