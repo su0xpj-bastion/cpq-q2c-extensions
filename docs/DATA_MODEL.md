@@ -42,6 +42,11 @@ net price *after* it (floors, approval level), so it works with every layer CPQ 
 | SBQQ__Subscription__c | `Grandfathered__c` | Migration decisions | Renewal service |
 | Account | `Renewal_Cap_Pct__c` | Contract terms | Renewal service |
 | sbaa__Approval__c | `Quote__c` (lookup) | Advanced Approvals setup | `SBAA.ApprovalAPI.submit` |
+| SBQQ__Quote__c | `Liability_Cap__c`, `Auto_Renew__c`, `Termination_For_Convenience__c` | Rep / Legal on the quote | QCP terms review |
+| SBQQ__Quote__c | `Legal_Review_Required__c` | QCP onAfterCalculate | Legal approval rule |
+| Contract | `Lifecycle_Status__c` | Users + `RenewalNoticeJob`, enforced by trigger | Lifecycle reporting |
+| Contract | `Notice_Days__c`, `Auto_Renew__c` | Contracting (from the quote's terms) | `RenewalNotice` |
+| Contract | `Renewal_Quote_Created__c`, `Termination_Reason__c` | Renewal job / user | Idempotency, audit |
 
 **Twin fields:** CPQ copies a Product2 field to the quote line when the API names match, at no cost.
 That keeps `Max_Discount_Pct__c` on the line without a formula that would need the product loaded.

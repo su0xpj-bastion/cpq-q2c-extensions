@@ -34,6 +34,7 @@ returns it to Draft. Re-pricing can't keep an approval that was given for a smal
 | Deal Desk | `Approval_Level__c >= 1` | Deal Desk queue | 1 |
 | Finance | `Approval_Level__c >= 2` | Finance approver | 2 |
 | CFO | `Approval_Level__c >= 3` | CFO | 3 |
+| Legal | `Legal_Review_Required__c = true` | Legal queue | parallel to the chain |
 
 One numeric field drives the rules, so routing logic lives in code (tested), and the rules stay trivial.
 
@@ -71,3 +72,39 @@ sequenceDiagram
     CPQ->>QCP: onBeforeCalculate
     QCP-->>CPQ: special price = min(list, prior × (1+cap)), or prior if grandfathered
 ```
+
+## Contract lifecycle
+
+```mermaid
+stateDiagram-v2
+    [*] --> Draft
+    Draft --> InNegotiation: redlines start
+    InNegotiation --> Draft: back to drafting
+    InNegotiation --> Signed: both parties sign (signed date stamped)
+    Signed --> Active: start date reached / order activated
+    Active --> Expiring: renewal window opens (job)
+    Active --> Terminated: early termination (reason required)
+    Expiring --> Renewed: renewal contracted
+    Expiring --> Expired: end date passed, no renewal (job)
+    Expiring --> Terminated
+    Renewed --> [*]
+    Expired --> [*]
+    Terminated --> [*]
+```
+
+`Lifecycle_Status__c` is separate from the standard Contract `Status` because `Activated` carries
+platform semantics (activation locks fields and drives CPQ). The trigger enforces the transitions above.
+
+## Renewal notices (nightly `RenewalNoticeJob`)
+
+| As of | Auto-renew | Renewal quote exists | Action |
+|---|---|---|---|
+| Before notice date − 30 days | any | any | nothing |
+| Window open, on/before end date | yes | no | Create the renewal quote (ContractRenewer + capped uplift); contract → Expiring |
+| Window open, on/before end date | no | no | One high-priority task for the owner, due on the notice date; contract → Expiring |
+| Window open | any | yes | Nothing; the renewal quote is in progress |
+| After end date | no | — | Expired |
+| After end date | yes | no | Create the renewal quote late (flagged by running after end date) |
+
+Notice date = `EndDate − Notice_Days__c` (default 60). The job is idempotent: a renewal quote is created
+once (`Renewal_Quote_Created__c`), and an owner task isn't repeated while one is open.

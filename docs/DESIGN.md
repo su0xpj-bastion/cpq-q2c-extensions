@@ -12,6 +12,8 @@ those reasons.
 | Status can't skip approval | Validation rules see one record. They can't tell a calculation update from a status edit, or apply "re-price up → back to Draft" | `QuoteTriggerHandler` |
 | Amend / renew from a screen flow with policy | ContractAmender / ContractRenewer are API calls; the policy (no mid-term decreases) must run before CPQ builds the quote | Apex services + `AmendmentPolicy` |
 | Lock discount on grandfathered lines | Field-level security is per user, not per line | QCP `isFieldEditable` |
+| Legal review from contract terms | The terms risk must combine with pricing risk into one approval level, recomputed on every calculation | QCP `termsReview` + `ContractTerms` |
+| Contract lifecycle + renewal notices | Notice dates depend on per-contract notice periods and auto-renew; a renewal must go through the Renewer with prior-price facts, not CPQ's checkbox-triggered default | `ContractLifecycle`, `RenewalNotice`, `RenewalNoticeJob` |
 
 Still configuration, on purpose: products, bundles and options, price books, discount schedules,
 standard price rules, quote templates, and the Advanced Approvals rules and chains.

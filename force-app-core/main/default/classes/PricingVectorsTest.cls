@@ -116,4 +116,38 @@ private class PricingVectorsTest {
         Assert.areEqual('760.00', String.valueOf(results[0].amount));
         Assert.areEqual('2.5333', String.valueOf(results[0].months));
     }
+
+    @IsTest
+    static void contractTerms() {
+        for (Object item : section('terms')) {
+            Map<String, Object> v = (Map<String, Object>) item;
+            ContractTerms.Review got = ContractTerms.review((String) v.get('liability_cap'),
+                (Boolean) v.get('auto_renew'), (Boolean) v.get('termination_for_convenience'));
+            Assert.areEqual((Integer) v.get('expected_level'), got.level, (String) v.get('name'));
+            Assert.areEqual((Boolean) v.get('expected_legal'), got.legal, (String) v.get('name'));
+        }
+    }
+
+    @IsTest
+    static void contractTransitions() {
+        for (Object item : section('contract_status')) {
+            Map<String, Object> v = (Map<String, Object>) item;
+            Assert.areEqual((Boolean) v.get('allowed'),
+                ContractLifecycle.canTransition((String) v.get('from'), (String) v.get('to')),
+                String.valueOf(v.get('from')) + ' → ' + String.valueOf(v.get('to')));
+        }
+    }
+
+    @IsTest
+    static void renewalNotices() {
+        for (Object item : section('renewal_notice')) {
+            Map<String, Object> v = (Map<String, Object>) item;
+            RenewalNotice.Decision got = RenewalNotice.evaluate(
+                Date.valueOf((String) v.get('end_date')), (Integer) v.get('notice_days'),
+                (Boolean) v.get('auto_renew'), (Boolean) v.get('renewal_quoted'),
+                Date.valueOf((String) v.get('as_of')));
+            Assert.areEqual((String) v.get('expected_action'), got.action, (String) v.get('name'));
+            Assert.areEqual((Boolean) v.get('expected_expiring'), got.expiring, (String) v.get('name'));
+        }
+    }
 }
