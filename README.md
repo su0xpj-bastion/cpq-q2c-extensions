@@ -1,5 +1,7 @@
 # cpq-q2c-extensions
 
+> **Moved.** This project now lives in [revenue-systems/cpq-q2c-extensions](https://github.com/su0xpj-bastion/revenue-systems/tree/main/cpq-q2c-extensions), where it is maintained and tested. This repository is archived and read-only.
+
 Custom code written against the **Salesforce CPQ package** (SBQQ + Advanced Approvals) for the parts
 of quote-to-cash that configuration alone doesn't handle well: renewal pricing, floor-price
 protection, approval routing, quote and contract lifecycle enforcement, legal terms review,
